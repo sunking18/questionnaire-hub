@@ -87,8 +87,8 @@ questionnaireRouter.get('/:id', authenticate, async (req: AuthRequest, res: Resp
 questionnaireRouter.post('/', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const {
-      title, description, status = 'draft', sourceScaleId,
-      settings, theme, questions, validFrom, validUntil,
+      title, description, status = 'draft', type = 'survey', sourceScaleId, sourceTemplateId,
+      coverImage, coverSettings, settings, theme, questions, validFrom, validUntil,
     } = req.body;
 
     if (!title) {
@@ -101,7 +101,11 @@ questionnaireRouter.post('/', authenticate, async (req: AuthRequest, res: Respon
         title,
         description,
         status,
+        type,
         sourceScaleId,
+        sourceTemplateId,
+        coverImage,
+        coverSettings: coverSettings || undefined,
         settings: settings || {},
         theme: theme || {},
         questions: questions || [],
@@ -126,7 +130,7 @@ questionnaireRouter.put('/:id', authenticate, async (req: AuthRequest, res: Resp
       throw new AppError('问卷不存在', 404);
     }
 
-    const { title, description, status, sourceScaleId, settings, theme, questions, validFrom, validUntil } = req.body;
+    const { title, description, status, sourceScaleId, sourceTemplateId, coverImage, coverSettings, type, settings, theme, questions, validFrom, validUntil } = req.body;
 
     const questionnaire = await prisma.questionnaire.update({
       where: { id: req.params.id },
@@ -134,7 +138,11 @@ questionnaireRouter.put('/:id', authenticate, async (req: AuthRequest, res: Resp
         ...(title !== undefined && { title }),
         ...(description !== undefined && { description }),
         ...(status !== undefined && { status }),
+        ...(type !== undefined && { type }),
         ...(sourceScaleId !== undefined && { sourceScaleId }),
+        ...(sourceTemplateId !== undefined && { sourceTemplateId }),
+        ...(coverImage !== undefined && { coverImage }),
+        ...(coverSettings !== undefined && { coverSettings }),
         ...(settings !== undefined && { settings }),
         ...(theme !== undefined && { theme }),
         ...(questions !== undefined && { questions }),
@@ -178,8 +186,8 @@ questionnaireRouter.get('/public/:shareCode', async (req: AuthRequest, res: Resp
       include: {
         questionnaire: {
           select: {
-            id: true, title: true, description: true, questions: true,
-            settings: true, theme: true, status: true, validFrom: true, validUntil: true,
+            id: true, title: true, description: true, coverImage: true, coverSettings: true,
+            questions: true, settings: true, theme: true, status: true, validFrom: true, validUntil: true,
           },
         },
       },

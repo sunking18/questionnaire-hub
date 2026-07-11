@@ -3,25 +3,30 @@
 @tailwind utilities;
 
 :root {
-  --color-primary: #0891B2;
-  --color-primary-hover: #0E7490;
-  --color-primary-light: #ECFEFF;
-  --color-secondary: #22D3EE;
-  --color-cta: #059669;
-  --color-cta-hover: #047857;
-  --color-bg: #F8FAFC;
+  --color-primary: #E07A5F;
+  --color-primary-hover: #C45B3F;
+  --color-primary-light: #FDF1ED;
+  --color-primary-soft: #F4A261;
+  --color-secondary: #3D405B;
+  --color-secondary-hover: #2D3045;
+  --color-secondary-light: #E8E9F0;
+  --color-accent: #F2CC8F;
+  --color-accent-hover: #E6B96B;
+  --color-accent-light: #FDF6EC;
+  --color-success: #81B29A;
+  --color-success-hover: #6A9B83;
+  --color-info: #8AB6F9;
+  --color-info-hover: #6A9EE6;
+  --color-warning: #F4A261;
+  --color-warning-hover: #E08C4A;
+  --color-danger: #E76F51;
+  --color-danger-hover: #D45A3C;
+  --color-bg: #FDF6EC;
   --color-surface: #FFFFFF;
-  --color-text: #164E63;
-  --color-text-secondary: #475569;
-  --color-text-muted: #94A3B8;
-  --color-border: #E2E8F0;
-  --color-sidebar-bg: #0F172A;
-  --color-sidebar-text: #CBD5E1;
-  --color-sidebar-active: #0891B2;
-  --color-danger: #DC2626;
-  --color-danger-hover: #B91C1C;
-  --color-warning: #D97706;
-  --color-success: #059669;
+  --color-text: #3D405B;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #9CA3AF;
+  --color-border: #F0E6D8;
 }
 
 * {
@@ -47,9 +52,33 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: #F0E6D8;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: #E07A5F;
+}
+
+@layer components {
+  .card {
+    @apply bg-surface rounded-xl border border-border shadow-card;
+  }
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-hover hover:border-primary/20;
+  }
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-hover text-white px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2;
+  }
+  .btn-secondary {
+    @apply bg-secondary/10 hover:bg-secondary/15 text-secondary px-4 py-2.5 rounded-lg font-medium transition-all duration-200;
+  }
+  .btn-ghost {
+    @apply hover:bg-background text-text-primary px-4 py-2.5 rounded-lg font-medium transition-all duration-200;
+  }
+  .input {
+    @apply w-full px-4 py-2.5 border border-border rounded-lg bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200;
+  }
+  .label {
+    @apply block text-sm font-medium text-text-secondary mb-1.5;
+  }
 }

@@ -62,9 +62,12 @@ model Questionnaire {
   title         String    @db.VarChar(300)
   description   String?   @db.Text
   coverImage    String?   @map("cover_image") @db.VarChar(500)
+  coverSettings Json?     @map("cover_settings") @db.JsonB
+  type          String    @default("survey") @db.VarChar(20)
   status        String    @default("draft") @db.VarChar(20)
   isPublic      Boolean   @default(false) @map("is_public")
   sourceScaleId String?   @map("source_scale_id") @db.Uuid
+  sourceTemplateId String? @map("source_template_id") @db.Uuid
   settings      Json      @default("{}") @db.JsonB
   theme         Json      @default("{}") @db.JsonB
   questions     Json      @default("[]") @db.JsonB
@@ -84,8 +87,29 @@ model Questionnaire {
 
   @@index([userId])
   @@index([status])
+  @@index([type])
   @@index([createdAt])
   @@map("questionnaires")
+}
+
+// ==================== 问卷模板 ====================
+model Template {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(300)
+  description String?  @db.Text
+  category    String   @db.VarChar(50)
+  tags        Json     @default("[]") @db.JsonB
+  coverImage  String?  @map("cover_image") @db.VarChar(500)
+  questions   Json     @default("[]") @db.JsonB
+  settings    Json     @default("{}") @db.JsonB
+  isPublic    Boolean  @default(true) @map("is_public")
+  fillCount   Int      @default(0) @map("fill_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([category])
+  @@index([tags])
+  @@map("templates")
 }
 
 // ==================== 答卷 ====================

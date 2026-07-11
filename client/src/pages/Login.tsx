@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogIn, Eye, EyeOff } from 'lucide-react';
+import { LogIn, Eye, EyeOff, Sparkles } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('researcher@example.com');
@@ -27,51 +27,54 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-50 to-blue-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-text">
-            <span className="text-primary">Q</span>-Hub
+          <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-soft">
+            <Sparkles className="text-white" size={28} />
+          </div>
+          <h1 className="text-3xl font-bold text-text-primary">
+            Q-Hub
           </h1>
-          <p className="text-text-muted mt-2">问卷量表管理平台</p>
+          <p className="text-text-secondary mt-2">问卷量表管理平台</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-surface rounded-xl shadow-md p-8 space-y-5">
-          <h2 className="text-xl font-semibold text-text">登录</h2>
+        <form onSubmit={handleSubmit} className="bg-surface rounded-2xl shadow-card p-8 space-y-5 border border-border">
+          <h2 className="text-xl font-semibold text-text-primary">登录</h2>
 
           {error && (
-            <div className="bg-red-50 text-danger text-sm p-3 rounded-lg border border-red-200">
+            <div className="bg-danger-light text-danger text-sm p-3 rounded-lg border border-danger/20">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">邮箱</label>
+            <label className="label">邮箱</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2.5 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
+              className="input"
               placeholder="researcher@example.com"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">密码</label>
+            <label className="label">密码</label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2.5 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition pr-10"
+                className="input pr-10"
                 placeholder="••••••••"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -80,7 +83,7 @@ export default function Login() {
 
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2 text-text-secondary cursor-pointer">
-              <input type="checkbox" className="rounded border-border" />
+              <input type="checkbox" className="rounded border-border text-primary focus:ring-primary" />
               记住我
             </label>
             <a href="#" className="text-primary hover:text-primary-hover">忘记密码？</a>
@@ -89,7 +92,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary hover:bg-primary-hover text-white font-medium py-2.5 rounded-lg transition flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full btn-primary disabled:opacity-50"
           >
             <LogIn size={18} />
             {loading ? '登录中...' : '登录'}

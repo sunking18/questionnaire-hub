@@ -14,15 +14,52 @@ export interface QuestionOption {
   label: string;
 }
 
+export interface MatrixRow {
+  id: string;
+  label: string;
+}
+
+export interface MatrixColumn {
+  id: string;
+  label: string;
+}
+
+export interface ScaleConfig {
+  min: number;
+  max: number;
+  minLabel: string;
+  maxLabel: string;
+  type: 'number' | 'star' | 'heart' | 'emoji' | 'slider';
+}
+
 export interface Question {
   id: string;
-  type: 'radio' | 'checkbox' | 'text' | 'textarea' | 'matrix' | 'rating' | 'dropdown';
+  type: 'radio' | 'checkbox' | 'dropdown' | 'text' | 'textarea' | 'number' | 'date' | 'rating' | 'scale' | 'matrix' | 'nps' | 'slider';
   title: string;
   required: boolean;
+  placeholder?: string;
+  description?: string;
   options?: QuestionOption[];
+  matrixRows?: MatrixRow[];
+  matrixColumns?: MatrixColumn[];
   dimension?: string;
+  scaleConfig?: ScaleConfig;
   scoreRange?: { min: number; max: number };
   reverseScore?: boolean;
+  displayLogic?: Record<string, any>;
+}
+
+export interface CoverSettings {
+  enabled: boolean;
+  title: string;
+  description?: string;
+  coverImage?: string;
+  mobileCoverImage?: string;
+  startTime?: string;
+  endTime?: string;
+  submitButtonText: string;
+  showProgress: boolean;
+  showTimer: boolean;
 }
 
 export interface Questionnaire {
@@ -30,6 +67,9 @@ export interface Questionnaire {
   userId: string;
   title: string;
   description?: string;
+  type: 'survey' | 'ai-interview';
+  coverImage?: string;
+  coverSettings?: CoverSettings;
   status: 'draft' | 'published' | 'paused' | 'closed';
   settings: Record<string, any>;
   theme: Record<string, any>;
@@ -40,8 +80,25 @@ export interface Questionnaire {
   createdAt: string;
   updatedAt: string;
   sourceScaleId?: string;
+  sourceTemplateId?: string;
   reportConfigs?: ReportConfig | null;
   _count?: { responses: number };
+}
+
+// Template
+export interface Template {
+  id: string;
+  name: string;
+  description?: string;
+  category: string;
+  tags: string[];
+  coverImage?: string;
+  questions: Question[];
+  settings: Record<string, any>;
+  isPublic: boolean;
+  fillCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Scale

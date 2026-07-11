@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
 import { questionnaireApi } from '../api';
 import type { Questionnaire } from '../types';
 
@@ -66,7 +66,7 @@ export default function QuestionnaireList() {
       </div>
 
       {/* Filters */}
-      <div className="bg-surface rounded-xl border border-border p-4 mb-6 flex items-center gap-4 flex-wrap">
+      <div className="bg-surface rounded-xl border border-border p-4 mb-6 flex items-center gap-4 flex-wrap shadow-card">
         <div className="relative flex-1 min-w-[200px]">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input

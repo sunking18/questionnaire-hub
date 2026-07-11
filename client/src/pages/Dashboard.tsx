@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ClipboardList, Library, Share2, BarChart3, TrendingUp, FileText, Users } from 'lucide-react';
+import { ClipboardList, Library, Share2, BarChart3, TrendingUp, Users } from 'lucide-react';
 import apiClient from '../api/client';
 
 interface DashboardData {

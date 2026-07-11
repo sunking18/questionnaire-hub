@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { authRouter } from './routes/auth';
 import { questionnaireRouter } from './routes/questionnaires';
+import { templateRouter } from './routes/templates';
 import { scaleRouter } from './routes/scales';
 import { responseRouter } from './routes/responses';
 import { reportRouter } from './routes/reports';
@@ -35,6 +36,7 @@ app.get('/api/health', (_req, res) => {
 // Routes
 app.use('/api/auth', authRouter);
 app.use('/api/questionnaires', questionnaireRouter);
+app.use('/api/templates', templateRouter);
 app.use('/api/scales', scaleRouter);
 app.use('/api/responses', responseRouter);
 app.use('/api/reports', reportRouter);

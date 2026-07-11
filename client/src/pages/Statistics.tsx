@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { BarChart3 } from 'lucide-react';
 import apiClient from '../api/client';
 import { questionnaireApi } from '../api';
 import type { StatisticsData, Questionnaire } from '../types';

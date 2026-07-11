@@ -296,6 +296,100 @@ async function main() {
   });
   console.log('✅ Created report config');
 
+  // 创建问卷模板
+  const templates = [
+    {
+      id: 'tmpl-consumer',
+      name: '大学生消费情况调查',
+      description: '了解大学生日常消费结构、消费观念与理财习惯，适用于高校消费行为研究。',
+      category: '大学生',
+      tags: ['大学生', '消费', '行为研究'],
+      questions: [
+        { id: 'q1', type: 'radio', title: '您的性别是', required: true, options: [{value:'0',label:'男'},{value:'1',label:'女'}] },
+        { id: 'q2', type: 'radio', title: '您每月生活费约为', required: true, options: [{value:'0',label:'1000元以下'},{value:'1',label:'1000-2000元'},{value:'2',label:'2000-3000元'},{value:'3',label:'3000元以上'}] },
+        { id: 'q3', type: 'checkbox', title: '您的主要消费项目有哪些？（可多选）', required: true, options: [{value:'0',label:'餐饮'},{value:'1',label:'服饰'},{value:'2',label:'娱乐'},{value:'3',label:'学习用品'},{value:'4',label:'交通'},{value:'5',label:'电子产品'}] },
+        { id: 'q4', type: 'scale', title: '您对个人消费状况的满意程度', required: true, scaleConfig: {min:1,max:5,minLabel:'非常不满意',maxLabel:'非常满意',type:'star'} },
+        { id: 'q5', type: 'textarea', title: '您认为大学生应树立怎样的消费观？', required: false },
+      ],
+    },
+    {
+      id: 'tmpl-love',
+      name: '大学生恋爱观调查',
+      description: '探索当代大学生恋爱态度、择偶标准与情感需求，适用于心理学与社会学研究。',
+      category: '大学生',
+      tags: ['大学生', '恋爱观', '心理'],
+      questions: [
+        { id: 'q1', type: 'radio', title: '您目前的恋爱状态是', required: true, options: [{value:'0',label:'单身'},{value:'1',label:'恋爱中'},{value:'2',label:'已婚'},{value:'3',label:'不愿透露'}] },
+        { id: 'q2', type: 'radio', title: '您认为自己开始恋爱的合适年龄是', required: true, options: [{value:'0',label:'18岁以下'},{value:'1',label:'18-22岁'},{value:'2',label:'22-25岁'},{value:'3',label:'25岁以上'}] },
+        { id: 'q3', type: 'checkbox', title: '您择偶时最看重哪些因素？（可多选）', required: true, options: [{value:'0',label:'性格'},{value:'1',label:'外貌'},{value:'2',label:'经济条件'},{value:'3',label:'家庭背景'},{value:'4',label:'共同兴趣'},{value:'5',label:'价值观一致'}] },
+        { id: 'q4', type: 'scale', title: '您对恋爱中独立空间的重视程度', required: true, scaleConfig: {min:1,max:5,minLabel:'不重视',maxLabel:'非常重视',type:'heart'} },
+        { id: 'q5', type: 'textarea', title: '请简述您理想中的亲密关系', required: false },
+      ],
+    },
+    {
+      id: 'tmpl-enterprise-sat',
+      name: '企业满意度调查',
+      description: '评估员工对企业整体环境、管理制度与发展空间的满意度，助力组织管理优化。',
+      category: '企业',
+      tags: ['企业', '满意度', '员工'],
+      questions: [
+        { id: 'q1', type: 'radio', title: '您在本企业工作年限', required: true, options: [{value:'0',label:'1年以下'},{value:'1',label:'1-3年'},{value:'2',label:'3-5年'},{value:'3',label:'5年以上'}] },
+        { id: 'q2', type: 'scale', title: '您对公司的整体满意度', required: true, scaleConfig: {min:1,max:5,minLabel:'非常不满意',maxLabel:'非常满意',type:'star'} },
+        { id: 'q3', type: 'scale', title: '您对直属领导的满意度', required: true, scaleConfig: {min:1,max:5,minLabel:'非常不满意',maxLabel:'非常满意',type:'star'} },
+        { id: 'q4', type: 'scale', title: '您对工作环境的满意度', required: true, scaleConfig: {min:1,max:5,minLabel:'非常不满意',maxLabel:'非常满意',type:'star'} },
+        { id: 'q5', type: 'checkbox', title: '您希望企业改善的方面有？（可多选）', required: false, options: [{value:'0',label:'薪酬福利'},{value:'1',label:'晋升机会'},{value:'2',label:'培训发展'},{value:'3',label:'工作氛围'},{value:'4',label:'办公环境'}] },
+        { id: 'q6', type: 'textarea', title: '您对企业管理的其他建议', required: false },
+      ],
+    },
+    {
+      id: 'tmpl-qwl',
+      name: '企业员工工作生活质量调查',
+      description: '从工作负荷、工作生活平衡、职业成长等维度评估员工工作生活质量。',
+      category: '企业',
+      tags: ['企业', '生活质量', '心理健康'],
+      questions: [
+        { id: 'q1', type: 'scale', title: '我认为目前工作量适中', required: true, scaleConfig: {min:1,max:5,minLabel:'完全不同意',maxLabel:'完全同意',type:'number'} },
+        { id: 'q2', type: 'scale', title: '我能够平衡好工作与生活', required: true, scaleConfig: {min:1,max:5,minLabel:'完全不同意',maxLabel:'完全同意',type:'number'} },
+        { id: 'q3', type: 'scale', title: '我在这份工作中有成长感', required: true, scaleConfig: {min:1,max:5,minLabel:'完全不同意',maxLabel:'完全同意',type:'number'} },
+        { id: 'q4', type: 'scale', title: '同事之间的支持让我感到温暖', required: true, scaleConfig: {min:1,max:5,minLabel:'完全不同意',maxLabel:'完全同意',type:'number'} },
+        { id: 'q5', type: 'scale', title: '我对未来职业发展有信心', required: true, scaleConfig: {min:1,max:5,minLabel:'完全不同意',maxLabel:'完全同意',type:'number'} },
+        { id: 'q6', type: 'textarea', title: '请描述您当前工作中最大的压力来源', required: false },
+      ],
+    },
+    {
+      id: 'tmpl-teacher-sat',
+      name: '教师满意度调查',
+      description: '了解教师对教学环境、职业发展、薪酬福利及学校支持的满意度。',
+      category: '教育',
+      tags: ['教师', '满意度', '教育'],
+      questions: [
+        { id: 'q1', type: 'radio', title: '您的教龄', required: true, options: [{value:'0',label:'1-5年'},{value:'1',label:'6-10年'},{value:'2',label:'11-20年'},{value:'3',label:'20年以上'}] },
+        { id: 'q2', type: 'scale', title: '您对学校教学设施的满意度', required: true, scaleConfig: {min:1,max:5,minLabel:'非常不满意',maxLabel:'非常满意',type:'star'} },
+        { id: 'q3', type: 'scale', title: '您对学校薪酬福利的满意度', required: true, scaleConfig: {min:1,max:5,minLabel:'非常不满意',maxLabel:'非常满意',type:'star'} },
+        { id: 'q4', type: 'scale', title: '您对职业发展空间满意度', required: true, scaleConfig: {min:1,max:5,minLabel:'非常不满意',maxLabel:'非常满意',type:'star'} },
+        { id: 'q5', type: 'checkbox', title: '您认为学校最需要改进的方面是？（可多选）', required: false, options: [{value:'0',label:'教学设备'},{value:'1',label:'培训机会'},{value:'2',label:'福利待遇'},{value:'3',label:'管理制度'},{value:'4',label:'学生支持'}] },
+        { id: 'q6', type: 'textarea', title: '您对学校发展的其他建议', required: false },
+      ],
+    },
+  ];
+
+  for (const t of templates) {
+    await prisma.template.upsert({
+      where: { id: t.id },
+      update: {},
+      create: {
+        id: t.id,
+        name: t.name,
+        description: t.description,
+        category: t.category,
+        tags: t.tags,
+        questions: t.questions,
+        isPublic: true,
+      },
+    });
+    console.log('✅ Created template:', t.name);
+  }
+
   console.log('\n🎉 Seed complete!');
   console.log('📧 Login: researcher@example.com');
   console.log('🔑 Password: password123');

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, RefreshCw, Search } from 'lucide-react';
+import { Eye, RefreshCw } from 'lucide-react';
 import { reportApi } from '../api';
 import { questionnaireApi } from '../api';
 import type { Report, Questionnaire } from '../types';

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, AlertCircle, Info, PieChart, RefreshCw } from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info, RefreshCw } from 'lucide-react';
 import { reportApi } from '../api';
 import { questionnaireApi } from '../api';
 import type { AggregateAnalysis, Questionnaire } from '../types';
@@ -37,7 +37,7 @@ export default function AggregateAnalysisPage() {
     }
   };
 
-  const alertIcons: Record<string, any> = { critical: AlertTriangle, warning: AlertCircle, info };
+  const alertIcons: Record<string, any> = { critical: AlertTriangle, warning: AlertCircle, info: Info };
   const alertColors: Record<string, string> = {
     critical: 'border-red-300 bg-red-50',
     warning: 'border-yellow-300 bg-yellow-50',

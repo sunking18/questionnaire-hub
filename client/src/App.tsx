@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import QuestionnaireList from './pages/QuestionnaireList';
 import QuestionnaireEditor from './pages/QuestionnaireEditor';
+import QuestionnaireCreate from './pages/QuestionnaireCreate';
 import DataManagement from './pages/DataManagement';
 import Statistics from './pages/Statistics';
 import ReportList from './pages/ReportList';
@@ -39,8 +40,7 @@ function AppRoutes() {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="questionnaires" element={<QuestionnaireList />} />
-        <Route path="questionnaires/new" element={<QuestionnaireEditor />} />
-        <Route path="questionnaires/:id" element={<QuestionnaireEditor />} />
+        <Route path="questionnaires/new" element={<QuestionnaireCreate />} />
         <Route path="questionnaires/:id/edit" element={<QuestionnaireEditor />} />
         <Route path="data" element={<DataManagement />} />
         <Route path="statistics" element={<Statistics />} />

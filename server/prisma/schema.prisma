@@ -1,0 +1,199 @@
+// Prisma schema for Questionnaire Hub
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== 用户 ====================
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique @db.VarChar(255)
+  passwordHash String    @map("password_hash") @db.VarChar(255)
+  displayName  String?   @map("display_name") @db.VarChar(100)
+  avatarUrl    String?   @map("avatar_url") @db.VarChar(500)
+  role         String    @default("user") @db.VarChar(20)
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  questionnaires Questionnaire[]
+  scales         Scale[]
+
+  @@map("users")
+}
+
+// ==================== 量表库 ====================
+model Scale {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  name           String   @db.VarChar(300)
+  nameEn         String?  @map("name_en") @db.VarChar(300)
+  abbreviation   String?  @db.VarChar(50)
+  category       String   @default("心理学") @db.VarChar(50)
+  description    String?  @db.Text
+  instructions   String?  @db.Text
+  questions      Json     @default("[]") @db.JsonB
+  dimensions     Json     @default("[]") @db.JsonB
+  scoringRules   Json?    @map("scoring_rules") @db.JsonB
+  cronbachAlpha  Decimal? @map("cronbach_alpha") @db.Decimal(5, 3)
+  author         String?  @db.VarChar(200)
+  year           Int?
+  source         String?  @db.VarChar(500)
+  isPublic       Boolean  @default(false) @map("is_public")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  user           User     @relation(fields: [userId], references: [id])
+
+  @@map("scales")
+}
+
+// ==================== 问卷 ====================
+model Questionnaire {
+  id            String    @id @default(uuid()) @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  title         String    @db.VarChar(300)
+  description   String?   @db.Text
+  coverImage    String?   @map("cover_image") @db.VarChar(500)
+  status        String    @default("draft") @db.VarChar(20)
+  isPublic      Boolean   @default(false) @map("is_public")
+  sourceScaleId String?   @map("source_scale_id") @db.Uuid
+  settings      Json      @default("{}") @db.JsonB
+  theme         Json      @default("{}") @db.JsonB
+  questions     Json      @default("[]") @db.JsonB
+  fillCount     Int       @default(0) @map("fill_count")
+  validFrom     DateTime? @map("valid_from")
+  validUntil    DateTime? @map("valid_until")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+
+  user          User          @relation(fields: [userId], references: [id])
+  responses     Response[]
+  reportConfigs ReportConfig[]
+  reports       Report[]
+  distributions Distribution[]
+  aggregateAnalysis AggregateAnalysis?
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("questionnaires")
+}
+
+// ==================== 答卷 ====================
+model Response {
+  id              String    @id @default(uuid()) @db.Uuid
+  questionnaireId String    @map("questionnaire_id") @db.Uuid
+  respondentId    String?   @map("respondent_id") @db.VarChar(100)
+  answers         Json      @default("{}") @db.JsonB
+  score           Json      @default("{}") @db.JsonB
+  totalScore      Decimal?  @map("total_score") @db.Decimal(10, 2)
+  severityLevel   String?   @map("severity_level") @db.VarChar(20)
+  duration        Int?
+  ipAddress       String?   @map("ip_address") @db.VarChar(50)
+  userAgent       String?   @map("user_agent") @db.Text
+  status          String    @default("completed") @db.VarChar(20)
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id])
+  report        Report?
+
+  @@index([questionnaireId])
+  @@index([createdAt])
+  @@map("responses")
+}
+
+// ==================== AI 报告配置 ====================
+model ReportConfig {
+  id              String  @id @default(uuid()) @db.Uuid
+  questionnaireId String  @unique @map("questionnaire_id") @db.Uuid
+  enabled         Boolean @default(false)
+  reportTitle     String? @map("report_title") @db.VarChar(300)
+  reportStyle     String  @default("professional") @map("report_style") @db.VarChar(50)
+  aiModel         String  @default("gpt-4o") @map("ai_model") @db.VarChar(50)
+  showOnSubmit    Boolean @default(true) @map("show_on_submit")
+  allowDownload   Boolean @default(true) @map("allow_download")
+  scoringRules    Json    @default("[]") @map("scoring_rules") @db.JsonB
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id])
+
+  @@map("report_configs")
+}
+
+// ==================== AI 报告 ====================
+model Report {
+  id              String   @id @default(uuid()) @db.Uuid
+  questionnaireId String   @map("questionnaire_id") @db.Uuid
+  responseId      String   @unique @map("response_id") @db.Uuid
+  totalScore      Decimal  @map("total_score") @db.Decimal(10, 2)
+  severityLevel   String   @map("severity_level") @db.VarChar(20)
+  matchedRuleId   String?  @map("matched_rule_id") @db.VarChar(50)
+  aiModel         String   @map("ai_model") @db.VarChar(50)
+  aiContent       String?  @map("ai_content") @db.Text
+  aiHtml          String?  @map("ai_html") @db.Text
+  tokensUsed      Int      @default(0) @map("tokens_used")
+  generationTime  Int      @default(0) @map("generation_time")
+  status          String   @default("pending") @db.VarChar(20)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id])
+  response      Response      @relation(fields: [responseId], references: [id])
+
+  @@index([questionnaireId])
+  @@index([severityLevel])
+  @@index([createdAt])
+  @@map("reports")
+}
+
+// ==================== 整体分析报告 ====================
+model AggregateAnalysis {
+  id                String   @id @default(uuid()) @db.Uuid
+  questionnaireId   String   @unique @map("questionnaire_id") @db.Uuid
+  totalResponses    Int      @default(0) @map("total_responses")
+  avgTotalScore     Decimal? @map("avg_total_score") @db.Decimal(10, 2)
+  medianTotalScore  Decimal? @map("median_total_score") @db.Decimal(10, 2)
+  stddevTotalScore  Decimal? @map("stddev_total_score") @db.Decimal(10, 4)
+  dimensionAvg      Json     @default("{}") @map("dimension_avg") @db.JsonB
+  severityDist      Json     @default("{}") @map("severity_distribution") @db.JsonB
+  scoreDist         Json     @default("[]") @map("score_distribution") @db.JsonB
+  analysisContent   String?  @map("analysis_content") @db.Text
+  analysisHtml      String?  @map("analysis_html") @db.Text
+  alerts            Json     @default("[]") @db.JsonB
+  tokensUsed        Int      @default(0) @map("tokens_used")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id])
+
+  @@map("aggregate_analyses")
+}
+
+// ==================== 分发记录 ====================
+model Distribution {
+  id              String   @id @default(uuid()) @db.Uuid
+  questionnaireId String   @map("questionnaire_id") @db.Uuid
+  channelType     String   @default("link") @map("channel_type") @db.VarChar(20)
+  shareCode       String   @unique @map("share_code") @db.VarChar(50)
+  qrCodeUrl       String?  @map("qr_code_url") @db.VarChar(500)
+  posterUrl       String?  @map("poster_url") @db.VarChar(500)
+  validFrom       DateTime? @map("valid_from")
+  validUntil      DateTime? @map("valid_until")
+  maxFills        Int?     @map("max_fills")
+  fillCount       Int      @default(0) @map("fill_count")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id])
+
+  @@index([shareCode])
+  @@map("distributions")
+}

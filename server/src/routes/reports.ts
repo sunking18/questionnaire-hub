@@ -62,8 +62,9 @@ reportRouter.get('/', authenticate, async (req: AuthRequest, res: Response, next
 // GET /api/reports/:id - 获取报告详情
 reportRouter.get('/:id', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const id = req.params.id as string;
     const report = await prisma.report.findUnique({
-      where: { id: req.params.id },
+      where: { id },
       include: {
         questionnaire: { select: { title: true, questions: true, userId: true } },
         response: { select: { answers: true, score: true } },
@@ -87,8 +88,9 @@ reportRouter.get('/:id', authenticate, async (req: AuthRequest, res: Response, n
 // GET /api/reports/respondent/:responseId - 填写者查看自己的报告
 reportRouter.get('/respondent/:responseId', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const responseId = req.params.responseId as string;
     const report = await prisma.report.findFirst({
-      where: { responseId: req.params.responseId },
+      where: { responseId },
       include: {
         questionnaire: { select: { title: true, questions: true } },
         response: { select: { answers: true, score: true, totalScore: true, severityLevel: true } },
@@ -108,8 +110,9 @@ reportRouter.get('/respondent/:responseId', async (req: AuthRequest, res: Respon
 // POST /api/reports/:responseId/regenerate - 重新生成报告
 reportRouter.post('/:responseId/regenerate', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const responseId = req.params.responseId as string;
     const existing = await prisma.report.findFirst({
-      where: { responseId: req.params.responseId },
+      where: { responseId },
       include: {
         questionnaire: {
           include: { reportConfigs: true },
@@ -137,8 +140,9 @@ reportRouter.post('/:responseId/regenerate', authenticate, async (req: AuthReque
 // POST /api/reports/aggregate/:questionnaireId - 生成整体分析报告
 reportRouter.post('/aggregate/:questionnaireId', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const qId = req.params.questionnaireId as string;
     const questionnaire = await prisma.questionnaire.findFirst({
-      where: { id: req.params.questionnaireId, userId: req.userId, deletedAt: null },
+      where: { id: qId, userId: req.userId, deletedAt: null },
       include: { reportConfigs: true },
     });
 
@@ -157,8 +161,9 @@ reportRouter.post('/aggregate/:questionnaireId', authenticate, async (req: AuthR
 // GET /api/reports/aggregate/:questionnaireId - 获取整体分析报告
 reportRouter.get('/aggregate/:questionnaireId', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const qId = req.params.questionnaireId as string;
     const analysis = await prisma.aggregateAnalysis.findUnique({
-      where: { questionnaireId: req.params.questionnaireId },
+      where: { questionnaireId: qId },
     });
 
     if (!analysis) {
@@ -174,8 +179,9 @@ reportRouter.get('/aggregate/:questionnaireId', authenticate, async (req: AuthRe
 // PUT /api/reports/config/:questionnaireId - 更新报告配置
 reportRouter.put('/config/:questionnaireId', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const qId = req.params.questionnaireId as string;
     const questionnaire = await prisma.questionnaire.findFirst({
-      where: { id: req.params.questionnaireId, userId: req.userId },
+      where: { id: qId, userId: req.userId },
     });
     if (!questionnaire) {
       throw new AppError('问卷不存在', 404);
@@ -184,9 +190,9 @@ reportRouter.put('/config/:questionnaireId', authenticate, async (req: AuthReque
     const { enabled, reportTitle, reportStyle, aiModel, showOnSubmit, allowDownload, scoringRules } = req.body;
 
     const config = await prisma.reportConfig.upsert({
-      where: { questionnaireId: req.params.questionnaireId },
+      where: { questionnaireId: qId },
       create: {
-        questionnaireId: req.params.questionnaireId,
+        questionnaireId: qId,
         enabled: enabled ?? false,
         reportTitle,
         reportStyle: reportStyle || 'professional',
@@ -215,8 +221,9 @@ reportRouter.put('/config/:questionnaireId', authenticate, async (req: AuthReque
 // GET /api/reports/config/:questionnaireId - 获取报告配置
 reportRouter.get('/config/:questionnaireId', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const qId = req.params.questionnaireId as string;
     const config = await prisma.reportConfig.findUnique({
-      where: { questionnaireId: req.params.questionnaireId },
+      where: { questionnaireId: qId },
     });
 
     res.json({ success: true, data: config });

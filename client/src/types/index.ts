@@ -34,7 +34,7 @@ export interface ScaleConfig {
 
 export interface Question {
   id: string;
-  type: 'radio' | 'checkbox' | 'dropdown' | 'text' | 'textarea' | 'number' | 'date' | 'rating' | 'scale' | 'matrix' | 'nps' | 'slider';
+  type: 'radio' | 'checkbox' | 'dropdown' | 'sort' | 'file' | 'text' | 'textarea' | 'number' | 'date' | 'rating' | 'scale' | 'matrix' | 'nps' | 'slider' | 'page' | 'paragraph' | 'section' | 'name' | 'idcard' | 'age' | 'gender' | 'education' | 'ethnicity' | 'marriage' | 'country' | 'province' | 'region' | 'email' | 'phone' | 'phoneVerify' | 'birthday' | 'time' | 'occupation' | 'university' | 'industry' | 'password' | 'address' | 'device' | 'cityLevel' | 'company';
   title: string;
   required: boolean;
   placeholder?: string;
@@ -47,6 +47,7 @@ export interface Question {
   scoreRange?: { min: number; max: number };
   reverseScore?: boolean;
   displayLogic?: Record<string, any>;
+  personalInfoType?: string;
 }
 
 export interface CoverSettings {
@@ -62,6 +63,99 @@ export interface CoverSettings {
   showTimer: boolean;
 }
 
+// Structured questionnaire settings (stored in the `settings` JSON field)
+export interface QuestionnaireSettings {
+  // Basic settings
+  timeControl?: {
+    enabled?: boolean;
+    startTime?: string;
+    endTime?: string;
+  };
+  password?: {
+    enabled?: boolean;
+    value?: string;
+  };
+  language?: string;
+  // After submit display
+  afterSubmit?: {
+    type?: 'thanks' | 'redirect' | 'conditional' | 'custom';
+    thanksMessage?: string;
+    redirectUrl?: string;
+    customResult?: boolean;
+    enableCoupon?: boolean;
+  };
+  // Answer limit
+  answerLimit?: {
+    deviceControl?: boolean;
+    ipLimit?: boolean;
+    wechatOnly?: boolean;
+    enableMaxResponses?: boolean;
+    maxResponses?: number;
+  };
+  // Submit control
+  submitControl?: {
+    allowResume?: boolean;
+    allowPreview?: boolean;
+    allowViewAfterSubmit?: boolean;
+    enableCaptcha?: boolean;
+    hideSourceInfo?: boolean;
+  };
+  // Share & query
+  share?: {
+    allowCopy?: boolean;
+    allowSearchEngine?: boolean;
+    dataShare?: boolean;
+    externalQuery?: boolean;
+  };
+  // Other
+  other?: {
+    displaySettings?: boolean;
+    dataPush?: boolean;
+    saveContacts?: boolean;
+  };
+}
+
+export interface QuestionnaireTheme {
+  themeId?: string;
+  primaryColor?: string;
+  background?: {
+    type?: 'color' | 'image' | 'gradient';
+    color?: string;
+    image?: string;
+    gradient?: string;
+  };
+  cover?: {
+    enabled?: boolean;
+    title?: string;
+    description?: string;
+    image?: string;
+  };
+  header?: {
+    enabled?: boolean;
+    logo?: string;
+    text?: string;
+    align?: 'left' | 'center' | 'right';
+  };
+  footer?: {
+    enabled?: boolean;
+    text?: string;
+    align?: 'left' | 'center' | 'right';
+  };
+  textStyle?: {
+    fontFamily?: string;
+    fontSize?: 'small' | 'normal' | 'large';
+    titleColor?: string;
+    textColor?: string;
+  };
+  display?: {
+    showQuestionNumber?: boolean;
+    showProgress?: boolean;
+    showTimer?: boolean;
+    showRequiredMark?: boolean;
+    compactMode?: boolean;
+  };
+}
+
 export interface Questionnaire {
   id: string;
   userId: string;
@@ -71,18 +165,40 @@ export interface Questionnaire {
   coverImage?: string;
   coverSettings?: CoverSettings;
   status: 'draft' | 'published' | 'paused' | 'closed';
-  settings: Record<string, any>;
-  theme: Record<string, any>;
+  settings: QuestionnaireSettings;
+  theme: QuestionnaireTheme;
   questions: Question[];
   fillCount: number;
   validFrom?: string;
   validUntil?: string;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string;
+  isStarred?: boolean;
   sourceScaleId?: string;
   sourceTemplateId?: string;
-  reportConfigs?: ReportConfig | null;
+  reportConfigs?: ReportConfig[] | null;
+  notificationConfig?: NotificationConfig | null;
   _count?: { responses: number };
+}
+
+// Notification
+export interface NotificationConfig {
+  id?: string;
+  questionnaireId?: string;
+  wechatEnabled?: boolean;
+  wechatOpenId?: string;
+  emailEnabled?: boolean;
+  emailAddresses?: string;
+  useCustomEmailServer?: boolean;
+  wecomEnabled?: boolean;
+  wecomWebhook?: string;
+  dingtalkEnabled?: boolean;
+  dingtalkWebhook?: string;
+  feishuEnabled?: boolean;
+  feishuWebhook?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Template
@@ -140,6 +256,7 @@ export interface ScoringRule {
   min: number;
   max: number;
   color: string;
+  severity?: string;
   systemPrompt: string;
   userPrompt?: string;
 }

@@ -7,11 +7,19 @@ import Dashboard from './pages/Dashboard';
 import QuestionnaireList from './pages/QuestionnaireList';
 import QuestionnaireEditor from './pages/QuestionnaireEditor';
 import QuestionnaireCreate from './pages/QuestionnaireCreate';
+import QuestionnaireDesignWizard from './pages/QuestionnaireDesignWizard';
+import QuestionnaireEditMode from './pages/QuestionnaireEditMode';
+import QuestionnaireSettingsPage from './pages/QuestionnaireSettingsPage';
+import QuestionnaireAppearancePage from './pages/QuestionnaireAppearancePage';
+import QuestionnaireRewardsPage from './pages/QuestionnaireRewardsPage';
+import QuestionnaireQualityPage from './pages/QuestionnaireQualityPage';
+import QuestionnaireApprovalPage from './pages/QuestionnaireApprovalPage';
 import DataManagement from './pages/DataManagement';
 import Statistics from './pages/Statistics';
 import ReportList from './pages/ReportList';
 import ReportDetail from './pages/ReportDetail';
 import AggregateAnalysisPage from './pages/AggregateAnalysis';
+import PreviewPage from './pages/PreviewPage';
 import FillQuestionnaire from './pages/FillQuestionnaire';
 import RespondentReport from './pages/RespondentReport';
 import DistributionPage from './pages/DistributionPage';
@@ -41,7 +49,15 @@ function AppRoutes() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="questionnaires" element={<QuestionnaireList />} />
         <Route path="questionnaires/new" element={<QuestionnaireCreate />} />
+        <Route path="questionnaires/:id/design" element={<QuestionnaireDesignWizard />} />
+        <Route path="questionnaires/:id/edit-mode" element={<QuestionnaireEditMode />} />
+        <Route path="questionnaires/:id/settings" element={<QuestionnaireSettingsPage />} />
+        <Route path="questionnaires/:id/appearance" element={<QuestionnaireAppearancePage />} />
+        <Route path="questionnaires/:id/rewards" element={<QuestionnaireRewardsPage />} />
+        <Route path="questionnaires/:id/quality" element={<QuestionnaireQualityPage />} />
+        <Route path="questionnaires/:id/approval" element={<QuestionnaireApprovalPage />} />
         <Route path="questionnaires/:id/edit" element={<QuestionnaireEditor />} />
+        <Route path="questionnaires/:id/preview" element={<PreviewPage />} />
         <Route path="data" element={<DataManagement />} />
         <Route path="statistics" element={<Statistics />} />
         <Route path="distribution" element={<DistributionPage />} />

@@ -9,8 +9,9 @@ export const responseRouter = Router();
 // POST /api/responses/:shareCode - 填写者提交答卷（无需登录）
 responseRouter.post('/:shareCode', optionalAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const shareCode = req.params.shareCode as string;
     const distribution = await prisma.distribution.findUnique({
-      where: { shareCode: req.params.shareCode },
+      where: { shareCode },
     });
 
     if (!distribution) {
@@ -59,7 +60,8 @@ responseRouter.post('/:shareCode', optionalAuth, async (req: AuthRequest, res: R
 
     // 如果开启了AI报告，自动生成
     let report = null;
-    if (questionnaire.reportConfigs?.enabled) {
+    const reportConfig = questionnaire.reportConfigs?.[0];
+    if (reportConfig?.enabled) {
       try {
         report = await generateReport(questionnaire, response);
       } catch (reportError) {
@@ -146,8 +148,9 @@ responseRouter.get('/', authenticate, async (req: AuthRequest, res: Response, ne
 // GET /api/responses/:id - 获取答卷详情
 responseRouter.get('/:id', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const id = req.params.id as string;
     const response = await prisma.response.findUnique({
-      where: { id: req.params.id },
+      where: { id },
       include: {
         questionnaire: {
           select: { title: true, questions: true, userId: true },
@@ -173,8 +176,9 @@ responseRouter.get('/:id', authenticate, async (req: AuthRequest, res: Response,
 // DELETE /api/responses/:id - 删除答卷
 responseRouter.delete('/:id', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const id = req.params.id as string;
     const response = await prisma.response.findUnique({
-      where: { id: req.params.id },
+      where: { id },
       include: { questionnaire: { select: { userId: true } } },
     });
 
@@ -185,7 +189,7 @@ responseRouter.delete('/:id', authenticate, async (req: AuthRequest, res: Respon
       throw new AppError('无权删除此答卷', 403);
     }
 
-    await prisma.response.delete({ where: { id: req.params.id } });
+    await prisma.response.delete({ where: { id } });
 
     res.json({ success: true, message: '删除成功' });
   } catch (error) {
@@ -196,15 +200,16 @@ responseRouter.delete('/:id', authenticate, async (req: AuthRequest, res: Respon
 // GET /api/responses/export/:questionnaireId - 导出答卷
 responseRouter.get('/export/:questionnaireId', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const qId = req.params.questionnaireId as string;
     const q = await prisma.questionnaire.findFirst({
-      where: { id: req.params.questionnaireId, userId: req.userId, deletedAt: null },
+      where: { id: qId, userId: req.userId, deletedAt: null },
     });
     if (!q) {
       throw new AppError('问卷不存在', 404);
     }
 
     const responses = await prisma.response.findMany({
-      where: { questionnaireId: req.params.questionnaireId },
+      where: { questionnaireId: qId },
       orderBy: { createdAt: 'asc' },
     });
 
@@ -215,9 +220,9 @@ responseRouter.get('/export/:questionnaireId', authenticate, async (req: AuthReq
       headers.push(`Q${i + 1}-${q.title?.substring(0, 20) || ''}`);
     });
 
-    const rows = responses.map((r, idx) => {
-      const row = [
-        idx + 1,
+    const rows = responses.map((r: any, idx: number) => {
+      const row: string[] = [
+        String(idx + 1),
         r.createdAt.toISOString(),
         r.totalScore?.toString() || '',
         r.severityLevel || '',
@@ -230,7 +235,7 @@ responseRouter.get('/export/:questionnaireId', authenticate, async (req: AuthReq
       return row;
     });
 
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const csv = [headers.join(','), ...rows.map((r: string[]) => r.join(','))].join('\n');
 
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename=responses-${q.title}.csv`);

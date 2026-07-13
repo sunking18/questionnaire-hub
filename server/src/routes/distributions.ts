@@ -9,15 +9,16 @@ export const distributionRouter = Router();
 // GET /api/distributions/:questionnaireId - 获取分发记录
 distributionRouter.get('/:questionnaireId', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const qId = req.params.questionnaireId as string;
     const questionnaire = await prisma.questionnaire.findFirst({
-      where: { id: req.params.questionnaireId, userId: req.userId, deletedAt: null },
+      where: { id: qId, userId: req.userId, deletedAt: null },
     });
     if (!questionnaire) {
       throw new AppError('问卷不存在', 404);
     }
 
     const distributions = await prisma.distribution.findMany({
-      where: { questionnaireId: req.params.questionnaireId },
+      where: { questionnaireId: qId },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -30,8 +31,9 @@ distributionRouter.get('/:questionnaireId', authenticate, async (req: AuthReques
 // POST /api/distributions/:questionnaireId - 创建分发链接
 distributionRouter.post('/:questionnaireId', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const qId = req.params.questionnaireId as string;
     const questionnaire = await prisma.questionnaire.findFirst({
-      where: { id: req.params.questionnaireId, userId: req.userId, deletedAt: null },
+      where: { id: qId, userId: req.userId, deletedAt: null },
     });
     if (!questionnaire) {
       throw new AppError('问卷不存在', 404);
@@ -45,7 +47,7 @@ distributionRouter.post('/:questionnaireId', authenticate, async (req: AuthReque
 
     const distribution = await prisma.distribution.create({
       data: {
-        questionnaireId: req.params.questionnaireId,
+        questionnaireId: qId,
         channelType,
         shareCode: uuidv4().substring(0, 8),
         validFrom: validFrom ? new Date(validFrom) : undefined,
@@ -68,8 +70,9 @@ distributionRouter.post('/:questionnaireId', authenticate, async (req: AuthReque
 // DELETE /api/distributions/:id - 删除分发记录
 distributionRouter.delete('/record/:id', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const id = req.params.id as string;
     const distribution = await prisma.distribution.findUnique({
-      where: { id: req.params.id },
+      where: { id },
       include: { questionnaire: { select: { userId: true } } },
     });
 
@@ -80,7 +83,7 @@ distributionRouter.delete('/record/:id', authenticate, async (req: AuthRequest, 
       throw new AppError('无权操作', 403);
     }
 
-    await prisma.distribution.delete({ where: { id: req.params.id } });
+    await prisma.distribution.delete({ where: { id } });
 
     res.json({ success: true, message: '删除成功' });
   } catch (error) {

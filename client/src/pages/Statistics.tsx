@@ -1,16 +1,27 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import apiClient from '../api/client';
 import { questionnaireApi } from '../api';
 import type { StatisticsData, Questionnaire } from '../types';
 
 export default function Statistics() {
+  const [searchParams] = useSearchParams();
+  const questionnaireIdFromUrl = searchParams.get('questionnaireId');
+
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
-  const [selectedQ, setSelectedQ] = useState('');
+  const [selectedQ, setSelectedQ] = useState(questionnaireIdFromUrl || '');
   const [stats, setStats] = useState<StatisticsData | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    questionnaireApi.list({ status: 'published', limit: 100 }).then(res => setQuestionnaires(res.data.data));
+    questionnaireApi.list({ status: 'all', limit: 100 }).then(res => {
+      const list = res.data.data.filter((q: Questionnaire) => q.status === 'published' || q.status === 'paused');
+      setQuestionnaires(list);
+      // If URL has questionnaireId but it's not in published/paused list, still allow loading it
+      if (questionnaireIdFromUrl && !selectedQ) {
+        setSelectedQ(questionnaireIdFromUrl);
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -38,7 +49,7 @@ export default function Statistics() {
         </div>
         {loading ? <div className="text-center py-12 text-text-muted">加载中...</div> :
           <div className="text-center py-12 text-text-muted bg-surface rounded-xl border border-border">
-            {selectedQ ? '暂无统计数据' : '请选择一份已发布的问卷'}
+            {selectedQ ? '暂无统计数据' : '请选择一份已发布或暂停的问卷'}
           </div>
         }
       </div>

@@ -27,7 +27,7 @@ templateRouter.get('/', async (req: AuthRequest, res: Response, next: NextFuncti
     });
 
     const filtered = tag
-      ? templates.filter(t => (t.tags as string[]).includes(tag as string))
+      ? templates.filter((t: any) => (t.tags as string[]).includes(tag as string))
       : templates;
 
     res.json({ success: true, data: filtered });
@@ -39,8 +39,9 @@ templateRouter.get('/', async (req: AuthRequest, res: Response, next: NextFuncti
 // GET /api/templates/:id - 获取模板详情
 templateRouter.get('/:id', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const id = req.params.id as string;
     const template = await prisma.template.findUnique({
-      where: { id: req.params.id },
+      where: { id },
     });
     if (!template) {
       throw new AppError('模板不存在', 404);
@@ -54,8 +55,9 @@ templateRouter.get('/:id', async (req: AuthRequest, res: Response, next: NextFun
 // POST /api/templates/:id/use - 使用模板创建问卷（可选）
 templateRouter.post('/:id/use', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const id = req.params.id as string;
     const template = await prisma.template.findUnique({
-      where: { id: req.params.id },
+      where: { id },
     });
     if (!template) {
       throw new AppError('模板不存在', 404);

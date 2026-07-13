@@ -11,6 +11,7 @@ import { responseRouter } from './routes/responses';
 import { reportRouter } from './routes/reports';
 import { distributionRouter } from './routes/distributions';
 import { statisticsRouter } from './routes/statistics';
+import { userThemeRouter } from './routes/userThemes';
 import { errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
@@ -42,6 +43,7 @@ app.use('/api/responses', responseRouter);
 app.use('/api/reports', reportRouter);
 app.use('/api/distributions', distributionRouter);
 app.use('/api/statistics', statisticsRouter);
+app.use('/api/user-themes', userThemeRouter);
 
 // Error handler
 app.use(errorHandler);

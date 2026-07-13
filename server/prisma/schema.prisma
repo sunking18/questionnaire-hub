@@ -24,6 +24,7 @@ model User {
 
   questionnaires Questionnaire[]
   scales         Scale[]
+  userThemes     UserTheme[]
 
   @@map("users")
 }
@@ -57,38 +58,41 @@ model Scale {
 
 // ==================== 问卷 ====================
 model Questionnaire {
-  id            String    @id @default(uuid()) @db.Uuid
-  userId        String    @map("user_id") @db.Uuid
-  title         String    @db.VarChar(300)
-  description   String?   @db.Text
-  coverImage    String?   @map("cover_image") @db.VarChar(500)
-  coverSettings Json?     @map("cover_settings") @db.JsonB
-  type          String    @default("survey") @db.VarChar(20)
-  status        String    @default("draft") @db.VarChar(20)
-  isPublic      Boolean   @default(false) @map("is_public")
-  sourceScaleId String?   @map("source_scale_id") @db.Uuid
-  sourceTemplateId String? @map("source_template_id") @db.Uuid
-  settings      Json      @default("{}") @db.JsonB
-  theme         Json      @default("{}") @db.JsonB
-  questions     Json      @default("[]") @db.JsonB
-  fillCount     Int       @default(0) @map("fill_count")
-  validFrom     DateTime? @map("valid_from")
-  validUntil    DateTime? @map("valid_until")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  deletedAt     DateTime? @map("deleted_at")
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  title            String    @db.VarChar(300)
+  description      String?   @db.Text
+  coverImage       String?   @map("cover_image") @db.VarChar(500)
+  coverSettings    Json?     @map("cover_settings") @db.JsonB
+  type             String    @default("survey") @db.VarChar(20)
+  status           String    @default("draft") @db.VarChar(20)
+  isPublic         Boolean   @default(false) @map("is_public")
+  sourceScaleId    String?   @map("source_scale_id") @db.Uuid
+  sourceTemplateId String?   @map("source_template_id") @db.VarChar(100)
+  settings         Json      @default("{}") @db.JsonB
+  theme            Json      @default("{}") @db.JsonB
+  questions        Json      @default("[]") @db.JsonB
+  fillCount        Int       @default(0) @map("fill_count")
+  validFrom        DateTime? @map("valid_from")
+  validUntil       DateTime? @map("valid_until")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
+  isStarred        Boolean   @default(false) @map("is_starred")
 
-  user          User          @relation(fields: [userId], references: [id])
-  responses     Response[]
-  reportConfigs ReportConfig[]
-  reports       Report[]
-  distributions Distribution[]
-  aggregateAnalysis AggregateAnalysis?
+  user               User          @relation(fields: [userId], references: [id])
+  responses          Response[]
+  reportConfigs      ReportConfig[]
+  reports            Report[]
+  distributions      Distribution[]
+  aggregateAnalysis  AggregateAnalysis?
+  notificationConfig QuestionnaireNotificationConfig?
 
   @@index([userId])
   @@index([status])
   @@index([type])
   @@index([createdAt])
+  @@index([deletedAt])
   @@map("questionnaires")
 }
 
@@ -220,4 +224,43 @@ model Distribution {
 
   @@index([shareCode])
   @@map("distributions")
+}
+
+// ==================== 问卷通知提醒配置 ====================
+model QuestionnaireNotificationConfig {
+  id                 String  @id @default(uuid()) @db.Uuid
+  questionnaireId    String  @unique @map("questionnaire_id") @db.Uuid
+  wechatEnabled      Boolean @default(false) @map("wechat_enabled")
+  wechatOpenId       String? @map("wechat_open_id") @db.VarChar(200)
+  emailEnabled       Boolean @default(false) @map("email_enabled")
+  emailAddresses     String? @map("email_addresses") @db.Text
+  useCustomEmailServer Boolean @default(false) @map("use_custom_email_server")
+  wecomEnabled       Boolean @default(false) @map("wecom_enabled")
+  wecomWebhook       String? @map("wecom_webhook") @db.VarChar(500)
+  dingtalkEnabled    Boolean @default(false) @map("dingtalk_enabled")
+  dingtalkWebhook    String? @map("dingtalk_webhook") @db.VarChar(500)
+  feishuEnabled      Boolean @default(false) @map("feishu_enabled")
+  feishuWebhook      String? @map("feishu_webhook") @db.VarChar(500)
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+
+  @@index([questionnaireId])
+  @@map("questionnaire_notification_configs")
+}
+
+// ==================== 用户自定义主题 ====================
+model UserTheme {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  name      String   @db.VarChar(100)
+  theme     Json     @default("{}") @db.JsonB
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("user_themes")
 }

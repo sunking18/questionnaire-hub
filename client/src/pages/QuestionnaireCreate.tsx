@@ -26,15 +26,25 @@ export default function QuestionnaireCreate() {
     return matchSearch && matchCategory;
   });
 
+  const [createError, setCreateError] = useState('');
+
   const createFromBlank = async () => {
     setCreating(true);
+    setCreateError('');
     try {
       const res = await questionnaireApi.create({
         title: '未命名问卷',
         type: activeTab,
         questions: [],
       });
-      navigate(`/questionnaires/${res.data.data.id}/edit`);
+      const id = res.data?.data?.id;
+      if (!id) {
+        throw new Error('创建问卷后未返回问卷 ID');
+      }
+      navigate(`/questionnaires/${id}/edit`, { replace: true });
+    } catch (err: any) {
+      console.error('创建问卷失败:', err);
+      setCreateError(err?.response?.data?.message || err?.message || '创建失败，请稍后重试');
     } finally {
       setCreating(false);
     }
@@ -98,6 +108,11 @@ export default function QuestionnaireCreate() {
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-text-primary">创建调查</h1>
           <p className="text-text-secondary mt-1">选择创建方式，快速开始心理学研究</p>
+          {createError && (
+            <div className="mt-4 p-3 rounded-lg bg-danger-light text-danger text-sm flex items-center gap-2">
+              <span className="font-bold">创建失败：</span>{createError}
+            </div>
+          )}
         </div>
 
         {/* Scene selector */}

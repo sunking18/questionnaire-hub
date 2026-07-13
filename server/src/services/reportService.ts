@@ -22,7 +22,7 @@ interface QuestionnaireWithConfig {
     showOnSubmit: boolean;
     allowDownload: boolean;
     scoringRules: any;
-  } | null;
+  }[] | null;
 }
 
 interface ResponseData {
@@ -65,11 +65,10 @@ export async function generateReport(
 ) {
   const openai = getOpenAI();
 
-  if (!questionnaire.reportConfigs?.enabled) {
+  const config = questionnaire.reportConfigs?.[0];
+  if (!config?.enabled) {
     throw new Error('该问卷未启用AI报告');
   }
-
-  const config = questionnaire.reportConfigs;
   const scoringRules = (config.scoringRules as any[]) || [];
   const totalScore = Number(response.totalScore);
   const matchedRule = matchRule(scoringRules, totalScore);
@@ -213,17 +212,17 @@ export async function generateAggregateAnalysis(questionnaire: QuestionnaireWith
     throw new Error('没有足够的答卷数据');
   }
 
-  const scores = responses.map(r => Number(r.totalScore)).sort((a, b) => a - b);
-  const avgScore = scores.reduce((a, b) => a + b, 0) / totalResponses;
+  const scores = responses.map((r: any) => Number(r.totalScore)).sort((a: number, b: number) => a - b);
+  const avgScore = scores.reduce((a: number, b: number) => a + b, 0) / totalResponses;
   const medianScore = totalResponses % 2 === 0
     ? (scores[totalResponses / 2 - 1] + scores[totalResponses / 2]) / 2
     : scores[Math.floor(totalResponses / 2)];
-  const variance = scores.reduce((s, v) => s + Math.pow(v - avgScore, 2), 0) / totalResponses;
+  const variance = scores.reduce((s: number, v: number) => s + Math.pow(v - avgScore, 2), 0) / totalResponses;
   const stddevScore = Math.sqrt(variance);
 
   // 严重程度分布
   const severityDist: Record<string, number> = {};
-  responses.forEach(r => {
+  responses.forEach((r: any) => {
     const level = r.severityLevel || '未知';
     severityDist[level] = (severityDist[level] || 0) + 1;
   });
@@ -237,7 +236,7 @@ export async function generateAggregateAnalysis(questionnaire: QuestionnaireWith
     }
   });
 
-  responses.forEach(r => {
+  responses.forEach((r: any) => {
     const answers = r.answers as Record<string, any>;
     questions.forEach((q: any) => {
       if (q.dimension) {
@@ -262,7 +261,7 @@ export async function generateAggregateAnalysis(questionnaire: QuestionnaireWith
   for (let i = 0; i < binCount; i++) {
     const min = i * binSize;
     const max = (i + 1) * binSize - 1;
-    const count = scores.filter(s => s >= min && s <= max).length;
+    const count = scores.filter((s: number) => s >= min && s <= max).length;
     scoreDist.push({ range: `${min}-${max}`, min, max, count });
   }
 

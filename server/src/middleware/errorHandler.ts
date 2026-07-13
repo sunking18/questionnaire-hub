@@ -29,5 +29,6 @@ export const errorHandler = (
   return res.status(500).json({
     success: false,
     message: '服务器内部错误',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined,
   });
 };

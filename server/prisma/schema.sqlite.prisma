@@ -1,0 +1,265 @@
+// Prisma schema for Questionnaire Hub
+// Database: SQLite (local development)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== 用户 ====================
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  displayName  String?  @map("display_name")
+  avatarUrl    String?  @map("avatar_url")
+  role         String   @default("user")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  questionnaires Questionnaire[]
+  scales         Scale[]
+  userThemes     UserTheme[]
+
+  @@map("users")
+}
+
+// ==================== 量表库 ====================
+model Scale {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  name           String
+  nameEn         String?  @map("name_en")
+  abbreviation   String?
+  category       String   @default("心理学")
+  description    String?
+  instructions   String?
+  questions      String   @default("[]")
+  dimensions     String   @default("[]")
+  scoringRules   String?  @map("scoring_rules")
+  cronbachAlpha  Float?   @map("cronbach_alpha")
+  author         String?
+  year           Int?
+  source         String?
+  isPublic       Boolean  @default(false) @map("is_public")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  user           User     @relation(fields: [userId], references: [id])
+
+  @@map("scales")
+}
+
+// ==================== 问卷 ====================
+model Questionnaire {
+  id               String    @id @default(uuid())
+  userId           String    @map("user_id")
+  title            String
+  description      String?
+  coverImage       String?   @map("cover_image")
+  coverSettings    String?   @map("cover_settings")
+  type             String    @default("survey")
+  status           String    @default("draft")
+  isPublic         Boolean   @default(false) @map("is_public")
+  sourceScaleId    String?   @map("source_scale_id")
+  sourceTemplateId String?   @map("source_template_id")
+  settings         String    @default("{}")
+  theme            String    @default("{}")
+  questions        String    @default("[]")
+  fillCount        Int       @default(0) @map("fill_count")
+  validFrom        DateTime? @map("valid_from")
+  validUntil       DateTime? @map("valid_until")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
+  isStarred        Boolean   @default(false) @map("is_starred")
+
+  user               User          @relation(fields: [userId], references: [id])
+  responses          Response[]
+  reportConfigs      ReportConfig[]
+  reports            Report[]
+  distributions      Distribution[]
+  aggregateAnalysis  AggregateAnalysis?
+  notificationConfig QuestionnaireNotificationConfig?
+
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@map("questionnaires")
+}
+
+// ==================== 问卷模板 ====================
+model Template {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  category    String
+  tags        String   @default("[]")
+  coverImage  String?  @map("cover_image")
+  questions   String   @default("[]")
+  settings    String   @default("{}")
+  isPublic    Boolean  @default(true) @map("is_public")
+  fillCount   Int      @default(0) @map("fill_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([category])
+  @@map("templates")
+}
+
+// ==================== 答卷 ====================
+model Response {
+  id              String    @id @default(uuid())
+  questionnaireId String    @map("questionnaire_id")
+  respondentId    String?   @map("respondent_id")
+  answers         String    @default("{}")
+  score           String    @default("{}")
+  totalScore      Float?    @map("total_score")
+  severityLevel   String?   @map("severity_level")
+  duration        Int?
+  ipAddress       String?   @map("ip_address")
+  userAgent       String?   @map("user_agent")
+  status          String    @default("completed")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id])
+  report        Report?
+
+  @@index([questionnaireId])
+  @@index([createdAt])
+  @@map("responses")
+}
+
+// ==================== AI 报告配置 ====================
+model ReportConfig {
+  id              String  @id @default(uuid())
+  questionnaireId String  @unique @map("questionnaire_id")
+  enabled         Boolean @default(false)
+  reportTitle     String? @map("report_title")
+  reportStyle     String  @default("professional") @map("report_style")
+  aiModel         String  @default("gpt-4o") @map("ai_model")
+  showOnSubmit    Boolean @default(true) @map("show_on_submit")
+  allowDownload   Boolean @default(true) @map("allow_download")
+  scoringRules    String  @default("[]") @map("scoring_rules")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id])
+
+  @@map("report_configs")
+}
+
+// ==================== AI 报告 ====================
+model Report {
+  id              String   @id @default(uuid())
+  questionnaireId String   @map("questionnaire_id")
+  responseId      String   @unique @map("response_id")
+  totalScore      Float    @map("total_score")
+  severityLevel   String   @map("severity_level")
+  matchedRuleId   String?  @map("matched_rule_id")
+  aiModel         String   @map("ai_model")
+  aiContent       String?  @map("ai_content")
+  aiHtml          String?  @map("ai_html")
+  tokensUsed      Int      @default(0) @map("tokens_used")
+  generationTime  Int      @default(0) @map("generation_time")
+  status          String   @default("pending")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id])
+  response      Response      @relation(fields: [responseId], references: [id])
+
+  @@index([questionnaireId])
+  @@index([severityLevel])
+  @@index([createdAt])
+  @@map("reports")
+}
+
+// ==================== 整体分析报告 ====================
+model AggregateAnalysis {
+  id                String   @id @default(uuid())
+  questionnaireId   String   @unique @map("questionnaire_id")
+  totalResponses    Int      @default(0) @map("total_responses")
+  avgTotalScore     Float?   @map("avg_total_score")
+  medianTotalScore  Float?   @map("median_total_score")
+  stddevTotalScore  Float?   @map("stddev_total_score")
+  dimensionAvg      String   @default("{}") @map("dimension_avg")
+  severityDist      String   @default("{}") @map("severity_distribution")
+  scoreDist         String   @default("[]") @map("score_distribution")
+  analysisContent   String?  @map("analysis_content")
+  analysisHtml      String?  @map("analysis_html")
+  alerts            String   @default("[]")
+  tokensUsed        Int      @default(0) @map("tokens_used")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id])
+
+  @@map("aggregate_analyses")
+}
+
+// ==================== 分发记录 ====================
+model Distribution {
+  id              String   @id @default(uuid())
+  questionnaireId String   @map("questionnaire_id")
+  channelType     String   @default("link") @map("channel_type")
+  shareCode       String   @unique @map("share_code")
+  qrCodeUrl       String?  @map("qr_code_url")
+  posterUrl       String?  @map("poster_url")
+  validFrom       DateTime? @map("valid_from")
+  validUntil      DateTime? @map("valid_until")
+  maxFills        Int?     @map("max_fills")
+  fillCount       Int      @default(0) @map("fill_count")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id])
+
+  @@index([shareCode])
+  @@map("distributions")
+}
+
+// ==================== 问卷通知提醒配置 ====================
+model QuestionnaireNotificationConfig {
+  id                 String  @id @default(uuid())
+  questionnaireId    String  @unique @map("questionnaire_id")
+  wechatEnabled      Boolean @default(false) @map("wechat_enabled")
+  wechatOpenId       String? @map("wechat_open_id")
+  emailEnabled       Boolean @default(false) @map("email_enabled")
+  emailAddresses     String? @map("email_addresses")
+  useCustomEmailServer Boolean @default(false) @map("use_custom_email_server")
+  wecomEnabled       Boolean @default(false) @map("wecom_enabled")
+  wecomWebhook       String? @map("wecom_webhook")
+  dingtalkEnabled    Boolean @default(false) @map("dingtalk_enabled")
+  dingtalkWebhook    String? @map("dingtalk_webhook")
+  feishuEnabled      Boolean @default(false) @map("feishu_enabled")
+  feishuWebhook      String? @map("feishu_webhook")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+
+  @@index([questionnaireId])
+  @@map("questionnaire_notification_configs")
+}
+
+// ==================== 用户自定义主题 ====================
+model UserTheme {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  name      String
+  theme     String   @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("user_themes")
+}

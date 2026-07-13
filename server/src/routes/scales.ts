@@ -30,8 +30,7 @@ scaleRouter.get('/', authenticate, async (req: AuthRequest, res: Response, next:
         select: {
           id: true, name: true, nameEn: true, abbreviation: true,
           category: true, cronbachAlpha: true, author: true, year: true,
-          source: true, createdAt: true,
-          _count: { select: { questions: true } },
+          source: true, questions: true, createdAt: true,
         },
         orderBy: { updatedAt: 'desc' },
         skip: (pageNum - 1) * limitNum,
@@ -42,7 +41,7 @@ scaleRouter.get('/', authenticate, async (req: AuthRequest, res: Response, next:
 
     res.json({
       success: true,
-      data: scales.map(s => ({
+      data: scales.map((s: any) => ({
         ...s,
         questionCount: (s.questions as any)?.length || 0,
       })),
@@ -56,8 +55,9 @@ scaleRouter.get('/', authenticate, async (req: AuthRequest, res: Response, next:
 // GET /api/scales/:id - 获取量表详情
 scaleRouter.get('/:id', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const id = req.params.id as string;
     const scale = await prisma.scale.findFirst({
-      where: { id: req.params.id, deletedAt: null },
+      where: { id, deletedAt: null },
     });
 
     if (!scale) {
@@ -97,8 +97,9 @@ scaleRouter.post('/', authenticate, async (req: AuthRequest, res: Response, next
 // PUT /api/scales/:id - 更新量表
 scaleRouter.put('/:id', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const id = req.params.id as string;
     const existing = await prisma.scale.findFirst({
-      where: { id: req.params.id, deletedAt: null },
+      where: { id, deletedAt: null },
     });
     if (!existing) {
       throw new AppError('量表不存在', 404);
@@ -113,7 +114,7 @@ scaleRouter.put('/:id', authenticate, async (req: AuthRequest, res: Response, ne
     }
 
     const scale = await prisma.scale.update({
-      where: { id: req.params.id },
+      where: { id },
       data: updateData,
     });
 
@@ -126,15 +127,16 @@ scaleRouter.put('/:id', authenticate, async (req: AuthRequest, res: Response, ne
 // DELETE /api/scales/:id - 软删除量表
 scaleRouter.delete('/:id', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const id = req.params.id as string;
     const existing = await prisma.scale.findFirst({
-      where: { id: req.params.id, deletedAt: null },
+      where: { id, deletedAt: null },
     });
     if (!existing) {
       throw new AppError('量表不存在', 404);
     }
 
     await prisma.scale.update({
-      where: { id: req.params.id },
+      where: { id },
       data: { deletedAt: new Date() },
     });
 
